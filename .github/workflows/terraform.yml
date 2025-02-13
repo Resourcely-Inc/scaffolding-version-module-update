@@ -38,24 +38,7 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-
-      - name: Ensure Modules File Exists
-        run: |
-          if [ -f .terraform/modules/modules.json ]; then
-            echo "Modules file exists."
-          else
-            echo "Modules file not found. Creating an empty file."
-            mkdir -p .terraform/modules
-            echo "{}" > .terraform/modules/modules.json
-          fi
         
-      - name: Upload Terraform Modules File
-        uses: actions/upload-artifact@v4
-        with:
-          name: modules-file-${{ matrix.env }}
-          path: .terraform/modules/modules.json
-          if-no-files-found: warn
-
       - name: Terraform Plan
         run: terraform plan -state=${{ matrix.env }}.tfstate -var-file=${{ matrix.env }}.tfvars -refresh=false -out=plan.raw
 
@@ -94,13 +77,6 @@ jobs:
           name: plan-file-dev
           path: tf-plan-files/
 
-      - name: Download Terraform Modules file
-        uses: actions/download-artifact@v4
-        with:
-          name: modules-file-dev
-          path: tf-plan-files/
-          if-no-files-found: warn
-
       - name: Download Terraform Plan Output
         uses: actions/download-artifact@v4
         with:
@@ -130,6 +106,5 @@ jobs:
           resourcely_api_token: ${{ secrets.RESOURCELY_API_TOKEN }}
           resourcely_api_host: "https://api.dev.resourcely.io"
           tf_plan_directory: "tf-plan-files"
-          modules_file: "tf-plan-files/modules.json"
           docker_tag: "dev-latest"
         
